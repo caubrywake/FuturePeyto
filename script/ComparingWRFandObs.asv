@@ -4,8 +4,7 @@
 % bias corrected. 
 % The data is first loaded and then graphed in scatter plots and time
 % series. 
-close all
-clear all
+
 %% Step 1: Load data
 % MET: Peyto 2000-2015
 % manually import 'dataproc\met\ObsPeyto_24042020.obs' and save as matlab format
@@ -17,6 +16,7 @@ clear ObsPeyto24042020_data ObsPeyto24042020_time
 load('D:\FuturePeyto\dataproc\wrf\WRFCur_PGW_24042020.mat', 'CUR', 'PGW')
 curtime = datetime([CUR(:, 1:5) zeros(length(CUR), 1)]);
 CUR = CUR(:, 6:end);
+curtime = datetime([CUR(:, 1:5) zeros(length(CUR), 1)]);
 PGW = PGW(:, 6:end);
 
 % WRF bias corrected
@@ -78,7 +78,7 @@ h = lsline; h(1).Color = l2; h(2).Color = l1; h(1).LineWidth = hw; h(2).LineWidt
 rl = refline(1,0); rl.Color = rlc; rl.LineStyle = ':'; rl.LineWidth = rlw;
 xlim([0 2.5]); ylim([0 2.5]); grid on
 a = round(corrcoef(obs(:, 2), CUR(:, 2), 'rows', 'pairwise'), 2);
-text(.05, 2.2, ({'(b) Specific Humidity (kPa)' ;strcat('   r = ', num2str(a(2)))}));xlabel ('OBS')
+text(.05, 2.2, ({'(b) Specific Humidity (hPa)' ;strcat('   r = ', num2str(a(2)))}));xlabel ('OBS')
 ylabel ('WRF')
 
 subplot (3,2,3)
@@ -177,14 +177,14 @@ subplot(3,4,3)
 q = qqplot(obs(:, 2), CUR(:, 2)); grid on; 
 set(q(1),'marker','x','markersize',3,'markeredgecolor',[0 0 0]); set(q(2), 'Color', c2, 'linewidth', 1);set(q(3), 'Color', c2, 'linewidth', 1, 'linestyle', ':'); % dashed line
 xlim([0 2.5]); ylim([0 2.5]); grid on
-text(.05, 2.2, ('(c) Specific Humidity (kPa)'));
+text(.05, 2.2, ('(c) Specific Humidity (hPa)'));
 xlabel ('OBS'); ylabel ('WRF')
 
 subplot(3,4,4)
 q = qqplot(obs(:, 2), CUR_bc(:, 2)); grid on; 
 set(q(1),'marker','x','markersize',3,'markeredgecolor',[0 0 0]); set(q(2), 'Color', c2, 'linewidth', 1);set(q(3), 'Color', c2, 'linewidth', 1, 'linestyle', ':'); % dashed line
 xlim([0 2.5]); ylim([0 2.5]); grid on
-text(.05, 2.2, ('(d) Specific Humidity (kPa)'));
+text(.05, 2.2, ('(d) Specific Humidity (hPa)'));
 xlabel ('OBS'); ylabel ('WRF bias corrected')
 % u %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 subplot(3,4,5)
@@ -250,10 +250,8 @@ set(findall(gcf,'-property','FontSize'),'FontSize',10)
 saveas (gcf, 'D:\FuturePeyto\fig\dataproc\QQplot_Obs_WRF_WRFbc_Current.pdf')
 saveas (gcf, 'D:\FuturePeyto\fig\dataproc\QQplot_Obs_WRF_WRFbc_Current.png')
 savefig(gcf, 'D:\FuturePeyto\fig\dataproc\QQplot_Obs_WRF_WRFbc_Current')
-clear a c1 c2 fig h hw l1 l2 rl rlc tr1 tr2 ms rlw
-
 %% A set of plot comparing BC current to OBS in a time series way
-fig = figure('units','inches','position',[0 0 10 7]); 
+fig = figure('units','inches','position',[0 0 11 8]); 
 subplot(3,2,1)
 plot (obstime, obs(:, 1)); hold on
 plot (curtime, CUR_bc(:, 1))
@@ -264,7 +262,7 @@ subplot(3,2,2)
 plot (obstime, obs(:, 2)); hold on
 plot (curtime, CUR_bc(:, 2))
 legend ('Obs', 'WRF bc')
-ylabel ('ea (kPa)')
+ylabel ('ea (hPa)')
 
 subplot(3,2,3)
 plot (obstime, obs(:, 3)); hold on
@@ -308,7 +306,7 @@ subplot(3,2,2)
 plot (curtime, CUR_bc(:, 2)); hold on
 plot (curtime, PGW_bc(:,2));
 legend ('Current bc', 'PGW bc')
-ylabel ('ea (kPa)')
+ylabel ('ea (hPa)')
 
 subplot(3,2,3)
 plot (curtime, CUR_bc(:, 3)); hold on
@@ -449,6 +447,8 @@ dd =VarPGW(:,:,6) ;
 x = timetable (t,dd);
 xx = retime(x, 'daily', 'sum');
 Vdd(:,:,6)= table2array(xx);
+
+
 td= xx.t;
 
 %% Compile mean and Std
@@ -480,36 +480,36 @@ ppgw = [Mpgw(:, 6) Mpgw(:, 6)+STDevpgw(:, 6) Mpgw(:, 6)-STDevpgw(:, 6)]';
 %% Plot with shadsing
 fig = figure('units','inches','position',[0 0 8 10]); 
 subplot (3,2,1)
-stdshade(t, .4,'k',td, 1) ; hold on
-stdshade(tpgw, .4,'r',td, 1) ;
+stdshade(t, .4,'k',tdaily, 1) ; hold on
+stdshade(tpgw, .4,'r',tdaily, 1) ;
 ylabel ('Ta ({\circ}C)')
 legend ('Current st. dev','Current average', 'PGW st. dev','PGW average', 'Orientation', 'Horizontal')
 
 subplot (3,2,2)
-stdshade(ea, .4,'k',td, 1) ; hold on
-stdshade(eapgw, .4,'r',td, 1) ; 
-ylabel ('ea (kPa)')
+stdshade(ea, .4,'k',tdaily, 1) ; hold on
+stdshade(eapgw, .4,'r',tdaily, 1) ; 
+ylabel ('ea (hPa)')
 
 subplot (3,2,3)
-stdshade(u, .4,'k',td, 1) ; hold on
-stdshade(upgw, .4,'r',td, 1) ;
+stdshade(u, .4,'k',tdaily, 1) ; hold on
+stdshade(upgw, .4,'r',tdaily, 1) ;
 ylabel ('U (m s^{-1})')
 
 subplot (3,2,4)
-stdshade(qsi, .4,'k',td, 1) ; hold on
-stdshade(qsipgw, .4,'r',td, 1) ; 
+stdshade(qsi, .4,'k',tdaily, 1) ; hold on
+stdshade(qsipgw, .4,'r',tdaily, 1) ; 
 ylabel ('SWin (W m^{-2})')
 
 subplot (3,2,5)
-stdshade(qli, .4,'k',td, 1) ; hold on
-stdshade(qlipgw, .4,'r',td, 1) 
+stdshade(qli, .4,'k',tdaily, 1) ; hold on
+stdshade(qlipgw, .4,'r',tdaily, 1) 
 ylabel ('LWin (W m^{-2})')
 
 subplot (3,2,6)
-stdshade(p, .4,'k',td, 1) ; hold on
-stdshade(ppgw, .4,'r',td, 1) 
+stdshade(p, .4,'k',tdaily, 1) ; hold on
+stdshade(ppgw, .4,'r',tdaily, 1) 
 ylabel ('P (mm)')
-%%
+
 saveas (gcf, 'D:\FuturePeyto\fig\dataproc\Shading_Cur_PGW.pdf')
 saveas (gcf, 'D:\FuturePeyto\fig\dataproc\Shading_Cur_PGW.png')
 savefig(gcf, 'D:\FuturePeyto\fig\dataproc\Shading_Cur_PGW')
@@ -529,8 +529,7 @@ end
      
           dd= Vdd(:,:,6);
      Mapgw(:, 6) = nansum(dd);
-%% 
-fig = figure('units','inches','position',[0 0 9 5]); 
+%%
 subplot(2,3,1)
 boxplot([Ma(:, 1), Mapgw(:, 1)]);
 ylabel(' Air Temperature');
@@ -540,7 +539,7 @@ ylabel ('Ta ({\circ}C)')
 subplot(2,3,2)
 boxplot([Ma(:, 2), Mapgw(:, 2)]);
 xticklabels ({'Current ', 'PGW'})
-ylabel ('ea (kPa)')
+ylabel ('ea (hPa)')
 
 subplot(2,3,3)
 boxplot([Ma(:, 3), Mapgw(:,3)]);
@@ -560,10 +559,5 @@ ylabel ('LWin (W m^{-2})')
 subplot(2,3,6)
 boxplot([Ma(:, 6), Mapgw(:, 6)]);
 xticklabels ({'Current ', 'PGW'})
-ylabel ('Precipitation (mm)')
-
-saveas (gcf, 'D:\FuturePeyto\fig\dataproc\Boxplot_Cur_PGW.pdf')
-saveas (gcf, 'D:\FuturePeyto\fig\dataproc\Boxplot_Cur_PGW.png')
-savefig(gcf, 'D:\FuturePeyto\fig\dataproc\Boxplot_Cur_PGW')
 
 %%
